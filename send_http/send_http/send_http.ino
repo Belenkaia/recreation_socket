@@ -1,20 +1,18 @@
-/**
-   Authorization.ino
-
-    Created on: 09.12.2015
-
-*/
-
 #include <Arduino.h>
 
 #include <ESP8266WiFi.h>
 #include <ESP8266WiFiMulti.h>
-
 #include <ESP8266HTTPClient.h>
-
 #include <WiFiClient.h>
+//for leds
+#define NUM_LEDS 22
+#include "FastLED.h"
+#define PIN 14
+//
 #define SERVER_IP "192.168.1.64:8080"
 ESP8266WiFiMulti WiFiMulti;
+CRGB leds[NUM_LEDS];
+
 int led1 = 12;
 int led2 = 13;
 int led3 = 5;
@@ -22,6 +20,11 @@ int led4 = 4;
 int ledOut = 7;
 int countFreeSocket;
 void setup() {
+  //for leds
+  FastLED.addLeds<WS2811, PIN, GRB>(leds, NUM_LEDS).setCorrection( TypicalLEDStrip );
+  FastLED.setBrightness(50);
+  pinMode(PIN, OUTPUT);
+  //
   countFreeSocket = 0;
   pinMode(led1, INPUT);
   //pinMode(ledOut, OUTPUT);
@@ -55,22 +58,69 @@ void setup() {
 void loop() {
   //digitalWrite(ledOut, HIGH);
   countFreeSocket = 0;
+    // for leds
+  int red = 100;
+  int green = 100; 
+  int blue = 100;
+  
   if(digitalRead(led4) != 1)
   {
     countFreeSocket ++;
+    green = 255;
+    red = 0;
+  }else
+  {
+    green = 0;
+    red = 255;
+  }
+  for (int i = 0; i < 5; i++ ) {         // от 0 до первой трети
+    leds[i] = CRGB(red, green, blue);  // HSV. Увеличивать HUE (цвет)
+    // умножение i уменьшает шаг радуги
   }
     if(digitalRead(led3) != 1)
   {
     countFreeSocket ++;
+     green = 255;
+    red = 0;
+  }else
+  {
+    green = 0;
+    red = 255;
+  }
+  for (int i = 5; i < 11; i++ ) {         // от 0 до первой трети
+    leds[i] = CRGB(red, green, blue);  // HSV. Увеличивать HUE (цвет)
+    // умножение i уменьшает шаг радуги
   }
     if(digitalRead(led2) != 1)
   {
     countFreeSocket ++;
+     green = 255;
+    red = 0;
+  }else
+  {
+    green = 0;
+    red = 255;
+  }
+   for (int i = 11; i < 16; i++ ) {         // от 0 до первой трети
+    leds[i] = CRGB(red, green, blue);  // HSV. Увеличивать HUE (цвет)
+    // умножение i уменьшает шаг радуги
   }
     if(digitalRead(led1) != 1)
   {
     countFreeSocket ++;
+     green = 255;
+    red = 0;
+  }else
+  {
+    green = 0;
+    red = 255;
   }
+    for (int i = 16; i < 22; i++ ) {         // от 0 до первой трети
+    leds[i] = CRGB(red, green, blue);  // HSV. Увеличивать HUE (цвет)
+    // умножение i уменьшает шаг радуги
+  }
+  FastLED.show();
+  
   Serial.print("count free socket: ");
   Serial.println(countFreeSocket);
   delay(5000);
@@ -112,6 +162,7 @@ void loop() {
     http.end();
   }
 
+  //
   delay(10000);
 
 }
