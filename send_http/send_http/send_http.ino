@@ -18,6 +18,7 @@ int led2 = 13;
 int led3 = 5;
 int led4 = 4;
 int ledOut = 7;
+int delay_count = 0;
 int countFreeSocket;
 void setup() {
   //for leds
@@ -123,9 +124,12 @@ void loop() {
   
   Serial.print("count free socket: ");
   Serial.println(countFreeSocket);
-  delay(5000);
+  //delay(1000);
+  delay_count ++;
+  
      if ((WiFi.status() == WL_CONNECTED)) {
-
+if(delay_count == 100){
+  delay_count = 0;
     WiFiClient client;
     HTTPClient http;
 
@@ -161,8 +165,9 @@ void loop() {
 
     http.end();
   }
+     }
 
   //
-  delay(10000);
+  delay(100);
 
 }
