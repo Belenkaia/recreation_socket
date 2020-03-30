@@ -1,4 +1,5 @@
-Copyright 2020 <Sofia Belenkaia
+Copyright 2020 
+<Sofia Belenkaia
 Stepan Fadeev
 Chloe Konde
 Alena Kulishkina
