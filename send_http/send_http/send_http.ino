@@ -9,7 +9,7 @@
 #include "FastLED.h"
 #define PIN 14
 //
-#define SERVER_IP "35.228.181.111"//"192.168.1.64:8080"
+#define SERVER_IP "192.168.1.64:8080"//"35.228.181.111"//"192.168.1.64:8080"
 ESP8266WiFiMulti WiFiMulti;
 CRGB leds[NUM_LEDS];
 
