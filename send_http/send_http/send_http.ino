@@ -6,13 +6,13 @@
 #include <WiFiClient.h>
 //for leds
 #define NUM_LEDS 22
-#include "FastLED.h"
+#include "FastLED.h";
 #define PIN 14
-//
-#define SERVER_IP "192.168.1.64:8080"//"35.228.181.111"//"192.168.1.64:8080"
+#define SERVER_IP "35.228.181.111" //"192.168.1.64:8080"//"35.228.181.111"//"192.168.1.64:8080"
 ESP8266WiFiMulti WiFiMulti;
 CRGB leds[NUM_LEDS];
-
+String WIFI_NAME = "Rostelecom116";//"HackSpace";
+String WIFI_KEY = "0803384429";//"hackspace";
 int led1 = 12;
 int led2 = 13;
 int led3 = 5;
@@ -20,190 +20,98 @@ int led4 = 4;
 int ledOut = 7;
 int delay_count = 0;
     // for leds
-  int red = 100;
-  int green = 100; 
-  int blue = 100;
+int red = 100;
+int green = 100; 
+int blue = 100;
 int countFreeSocket;
 int lastStatisticSocket[4];
 int lastSendedSocket;
 int somethingChanged = 1;
-void setup() {
+
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+void initLeds()
+{
   //for leds
   FastLED.addLeds<WS2811, PIN, GRB>(leds, NUM_LEDS).setCorrection( TypicalLEDStrip );
   FastLED.setBrightness(50);
   pinMode(PIN, OUTPUT);
-  //
-  countFreeSocket = 0;
-  lastSendedSocket = 1;
-  
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+void initSocketDetectors()
+{
   pinMode(led1, INPUT);
-  //pinMode(ledOut, OUTPUT);
   pinMode(led2, INPUT);
   pinMode(led3, INPUT);
   pinMode(led4, INPUT);
-  Serial.begin(115200);
-  // Serial.setDebugOutput(true);
+}
 
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+void wait()
+{
   Serial.println();
   Serial.println();
   Serial.println();
-
-  for (uint8_t t = 4; t > 0; t--) {
+  for (uint8_t t = 4; t > 0; t--) 
+  {
     Serial.printf("[SETUP] WAIT %d...\n", t);
     Serial.flush();
     delay(1000);
   }
+}
 
-  WiFi.mode(WIFI_STA);
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+void startWIFIConnection()
+{
+   WiFi.mode(WIFI_STA);
   while (WiFi.waitForConnectResult() != WL_CONNECTED) {
-    WiFi.begin("HackSpace", "hackspace");
-  
+    WiFi.begin(WIFI_NAME, WIFI_KEY);
   }
   IPAddress local_ip = WiFi.localIP();
   Serial.print("IP address: ");
   Serial.println(local_ip);
-
-  
-  if(digitalRead(led4) != 1)
-  {
-    countFreeSocket ++;
-    green = 255;
-    red = 0;
-    lastStatisticSocket[0] = 0;
-    //lastSendedSocket[0] = 1;
-  }else
-  {
-    lastStatisticSocket[0] = 1;
-    //lastSendedSocket[0] = 0;
-    green = 0;
-    red = 255;
-  }
-  for (int i = 0; i < 5; i++ ) {         // от 0 до первой трети
-    leds[i] = CRGB(red, green, blue);  // HSV. Увеличивать HUE (цвет)
-    // умножение i уменьшает шаг радуги
-  }
-    if(digitalRead(led3) != 1)
-  {
-    //lastSendedSocket[1] = 1;
-    lastStatisticSocket[1] = 0;
-    countFreeSocket ++;
-    green = 255;
-    red = 0;
-  }else
-  {
-    //lastSendedSocket[1] = 0;
-    lastStatisticSocket[1] = 1;
-    green = 0;
-    red = 255;
-  }
-  for (int i = 5; i < 11; i++ ) {         // от 0 до первой трети
-    leds[i] = CRGB(red, green, blue);  // HSV. Увеличивать HUE (цвет)
-    // умножение i уменьшает шаг радуги
-  }
-    if(digitalRead(led2) != 1)
-  {
-     //lastSendedSocket[2] = 1;
-     lastStatisticSocket[2] = 0;
-     countFreeSocket ++;
-     green = 255;
-    red = 0;
-  }else
-  {
-    //lastSendedSocket[2] = 0;
-    lastStatisticSocket[2] = 1;
-    green = 0;
-    red = 255;
-  }
-   for (int i = 11; i < 16; i++ ) {         // от 0 до первой трети
-    leds[i] = CRGB(red, green, blue);  // HSV. Увеличивать HUE (цвет)
-    // умножение i уменьшает шаг радуги
-  }
-    if(digitalRead(led1) != 1)
-  {
-    //lastSendedSocket[3] = 1;
-    lastStatisticSocket[3] = 0;
-    countFreeSocket ++;
-    green = 255;
-    red = 0;
-  }else
-  {
-    //lastSendedSocket[3] = 0;
-    lastStatisticSocket[3] = 1;
-    green = 0;
-    red = 255;
-  }
-    for (int i = 16; i < 22; i++ ) {
-    leds[i] = CRGB(red, green, blue);
-  }
-  FastLED.show();
 }
 
-void loop() {
-  //countFreeSocket = 0;
-  if(digitalRead(led4) != lastStatisticSocket[0])
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+void checkSocket(int led, int indexStatistic, int ledFirstIndex, int ledLastIndex)
+{
+   if(digitalRead(led) != 1)
   {
-    lastStatisticSocket[0] = digitalRead(led4);
-    if(lastStatisticSocket[0] == 0)
-    {
-      countFreeSocket ++;
-      green = 255;
-      red = 0;
-    }
-    else
-    {
-      countFreeSocket --;
-      green = 0;
-      red = 255;
-    }
-    for (int i = 0; i < 5; i++ ) {
-      leds[i] = CRGB(red, green, blue);
-    }
+    countFreeSocket ++;
+    green = 255;
+    red = 0;
+    lastStatisticSocket[indexStatistic] = 0;
+  }else
+  {
+    lastStatisticSocket[indexStatistic] = 1;
+    green = 0;
+    red = 255;
   }
-  
-  if(digitalRead(led3) != lastStatisticSocket[1])
+  for (int i = ledFirstIndex; i < ledLastIndex; i++ ) // colored part of LED which associated with that socket
   {
-    lastStatisticSocket[1] = digitalRead(led3);
-    if(lastStatisticSocket[1] == 0)
-    {
-      countFreeSocket ++;
-      green = 255;
-      red = 0;
-    }
-    else
-    {
-      countFreeSocket --;
-      green = 0;
-      red = 255;
-    }
-    for (int i = 5; i < 11; i++ ) {
-      leds[i] = CRGB(red, green, blue);
-    }
-  }
-
-if(digitalRead(led2) != lastStatisticSocket[2])
-  {
-    lastStatisticSocket[2] = digitalRead(led2);
-    if(lastStatisticSocket[2] == 0)
-    {
-      countFreeSocket ++;
-      green = 255;
-      red = 0;
-    }
-    else
-    {
-      countFreeSocket --;
-      green = 0;
-      red = 255;
-    }
-   for (int i = 11; i < 16; i++ ) {
     leds[i] = CRGB(red, green, blue);
-   }
   }
-  
-  if(digitalRead(led1) != lastStatisticSocket[3])
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+void checkSocketChange(int led, int indexStatistic, int ledFirstIndex, int ledLastIndex)
+{
+  if(digitalRead(led) != lastStatisticSocket[indexStatistic])
   {
-    lastStatisticSocket[3] = digitalRead(led1);
-    if(lastStatisticSocket[3] == 0)
+    lastStatisticSocket[indexStatistic] = digitalRead(led);
+    if(lastStatisticSocket[indexStatistic] == 0)
     {
       countFreeSocket ++;
       green = 255;
@@ -215,28 +123,22 @@ if(digitalRead(led2) != lastStatisticSocket[2])
       green = 0;
       red = 255;
     }
-     for (int i = 16; i < 22; i++ ) {
+    for (int i = ledFirstIndex; i < ledLastIndex; i++ ) {
       leds[i] = CRGB(red, green, blue);
     }
   }
+}
 
-   //somethingChanged = 0;
-   //for(int i = 0; i < 4; i ++){
-   // if(lastSendedSocket[i] != lastStatisticSocket[i])
-   //   somethingChanged = 1; 
-    //}
 
-  FastLED.show();
-  
-//  Serial.print("count free socket: ");
-//  Serial.println(countFreeSocket);
-  //delay(1000);
-  delay_count ++;
-  
-if ((WiFi.status() == WL_CONNECTED)) {
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+void sendHTTP()
+{
+  if ((WiFi.status() == WL_CONNECTED)) {
   if(/*(delay_count == 10) &&*/(lastSendedSocket != countFreeSocket)){
     lastSendedSocket = countFreeSocket;
-    delay_count = 0;
+    //  delay_count = 0;
     //for(int i = 0; i < 4; i ++){
     //lastSendedSocket[i] = lastStatisticSocket[i]; 
     //}
@@ -245,9 +147,9 @@ if ((WiFi.status() == WL_CONNECTED)) {
 
     Serial.print("[HTTP] begin...\n");
     // configure traged server and url
-    String httpStr = "http://";
-    String http2Str = "/recreation/api/data";
-    http.begin(client, httpStr+SERVER_IP+http2Str); //HTTP
+    //String httpStr = "http://";
+    //String http2Str = "/recreation/api/data";
+    http.begin(client, "http://35.228.181.111/");///recreation/api/data");// httpStr+SERVER_IP+http2Str); //HTTP
     http.addHeader("Content-Type", "application/json");
 
     Serial.print("[HTTP] POST...\n");
@@ -272,10 +174,50 @@ if ((WiFi.status() == WL_CONNECTED)) {
     } else {
       Serial.printf("[HTTP] POST... failed, error: %s\n", http.errorToString(httpCode).c_str());
     }
-
     http.end();
   }
  }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+void setup() {
+  initLeds();
+  countFreeSocket = 0;
+  lastSendedSocket = 1;
+  
+  initSocketDetectors();
+  Serial.begin(115200);
+  wait();
+  startWIFIConnection();
+//checkSocket(int led, int indexStatistic, int ledFirstIndex, int ledLastIndex)
+
+  checkSocket(led4, 0, 0, 5);
+  checkSocket(led3, 1, 5, 11);
+ 
+  //checkSocket(int led, int indexStatistic, int ledFirstIndex, int ledLastIndex)
+  checkSocket(led2, 2, 11, 16);
+  checkSocket(led1, 3, 16, 22);
+  FastLED.show();
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+void loop() {
+   checkSocketChange(led4, 0, 0, 5);
+   checkSocketChange(led3, 1, 5, 11);
+   checkSocketChange(led2, 2, 11, 16);
+   checkSocketChange(led1, 3, 16, 22);
+
+  FastLED.show();
+  
+  //Serial.print("count free socket: ");
+  //Serial.println(countFreeSocket);
+  //delay(1000);
+  //delay_count ++;
+  sendHTTP();
 
   //
   delay(100);
